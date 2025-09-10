@@ -1,17 +1,22 @@
 {
-  "id": "com.genalony000.cell",
-  "name": "XO رومانسي 💖",
-  "short_name": "XO 💖",
-  "description": "لعبة XO رومانسية ممتعة ثنائية اللاعبين مع موسيقى وخلفية جميلة.",
-  "lang": "ar",
-  "dir": "rtl",
-  "start_url": "./index.html",
-  "scope": "./",
+  "name": "genalony000-cell",
+  "short_name": "Genalony",
+  "description": "تطبيق PWA الخاص بك",
+  "start_url": "/index.html",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffe6f0",
-  "theme_color": "#ff4b5c",
-  "orientation": "portrait",
-  "categories": ["games", "entertainment"],
+  "display_override": ["standalone", "fullscreen", "minimal-ui"],
+  "background_color": "#ffffff",
+  "theme_color": "#0078D7",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "play",
+      "id": "com.example.yourapp",
+      "url": "https://play.google.com/store/apps/details?id=com.example.yourapp"
+    }
+  ],
   "icons": [
     {
       "src": "icon-192.png",
@@ -27,13 +32,21 @@
   "screenshots": [
     {
       "src": "screenshot1.png",
-      "sizes": "540x960",
+      "sizes": "1080x1920",
       "type": "image/png"
     },
     {
       "src": "screenshot2.png",
-      "sizes": "540x960",
+      "sizes": "1080x1920",
       "type": "image/png"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "الرئيسية",
+      "url": "/index.html",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ],
+  "iarc_rating_id": "e10+" 
 }
