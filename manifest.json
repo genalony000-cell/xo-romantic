@@ -1,11 +1,12 @@
 {
-  "name": "XO رومانسي 💖",
-  "short_name": "XO Love",
-  "start_url": "./index.html",
+  "id": "/?source=pwa",
+  "name": "XO Romantic",
+  "short_name": "XO",
+  "description": "لعبة XO رومانسية ممتعة يمكنك لعبها مباشرة على هاتفك.",
+  "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#ffe6f0",
-  "theme_color": "#ff4b5c",
-  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#ff4081",
   "icons": [
     {
       "src": "icons/icon-192.png",
@@ -17,5 +18,8 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "categories": ["games", "puzzle"],
+  "orientation": "portrait-primary",
+  "lang": "ar"
 }
