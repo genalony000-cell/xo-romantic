@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XO رومانسي 💖</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff4b5c">
+
+  <!-- تسجيل Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('✅ Service Worker مسجل'))
+        .catch(err => console.log('❌ Service Worker خطأ:', err));
+    }
+  </script>
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #ffe6f0, #ffccd5);
+      font-family: 'Tahoma', sans-serif;
+      overflow: hidden;
+    }
+    .scoreboard { display: flex; gap: 40px; font-size: 1.2em; color: #fff; font-weight: bold; margin-bottom: 15px; text-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
+    .board { display: grid; grid-template-columns: repeat(3, 100px); grid-template-rows: repeat(3, 100px); gap: 8px; }
+    .cell { width: 100px; height: 100px; background: #fff0f5; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 2.5em; cursor: pointer; transition: transform 0.2s, background 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .cell:hover { transform: scale(1.1); background: #ffd6e8; }
+    .cell.win { animation: winAnim 0.5s ease forwards; }
+    @keyframes winAnim { 0% { transform: scale(1);} 50% { transform: scale(1.3);} 100% { transform: scale(1);} }
+    .info { margin-top: 15px; font-size: 1.2em; color: #fff; font-weight: bold; }
+    button { margin-top: 15px; padding: 10px 20px; border: none; border-radius: 10px; background: #ff4b5c; color: #fff; font-size: 1em; cursor: pointer; transition: 0.3s; }
+    button:hover { background: #e63950; }
+    .controls { margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .controls label { color: #fff; font-size: 0.9em; }
+    .heart { position: absolute; font-size: 1.5em; animation: floatUp 1s ease forwards; pointer-events: none; }
+    @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1;} 50% { transform: translateY(-30px) scale(1.2); opacity: 0.8;} 100% { transform: translateY(-60px) scale(1); opacity: 0;} }
+    .spark { position: absolute; font-size: 1em; animation: sparkAnim 1s ease forwards; pointer-events: none; }
+    @keyframes sparkAnim { 0% { transform: translateY(0) scale(1); opacity: 1;} 50% { transform: translateY(-50px) scale(1.5); opacity: 0.8;} 100% { transform: translateY(-100px) scale(1); opacity: 0;} }
+  </style>
+</head>
+<body>
+  <div class="scoreboard">
+    <div>💙: <span id="blueScore">0</span></div>
+    <div>❤️: <span id="redScore">0</span></div>
+  </div>
+
+  <div class="board" id="board"></div>
+  <div class="info" id="info">الدور على: 💙</div>
+  <button onclick="resetGame()">إعادة اللعبة 🔄</button>
+
+  <!-- موسيقى رومانسية -->
+  <audio id="bg-music" autoplay loop>
+    <source src="https://www.bensound.com/bensound-music/bensound-romantic.mp3" type="audio/mpeg">
+    متصفحك لا يدعم تشغيل الصوت
+  </audio>
+
+  <!-- عناصر التحكم -->
+  <div class="controls">
+    <button id="toggleMusic">⏸️ إيقاف/تشغيل الموسيقى</button>
+    <label>مستوى الصوت 🎶</label>
+    <input type="range" id="volumeControl" min="0" max="1" step="0.05" value="1">
+  </div>
+
+  <script>
+    const board = document.getElementById('board');
+    const info = document.getElementById('info');
+    const music = document.getElementById('bg-music');
+    const toggleMusicBtn = document.getElementById('toggleMusic');
+    const volumeControl = document.getElementById('volumeControl');
+    const blueScoreEl = document.getElementById('blueScore');
+    const redScoreEl = document.getElementById('redScore');
+
+    let currentPlayer = '💙';
+    let cells = Array(9).fill(null);
+    let gameOver = false;
+    let scores = { '💙': 0, '❤️': 0 };
+
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      cell.dataset.index = i;
+      cell.addEventListener('click', handleClick);
+      board.appendChild(cell);
+    }
+
+    function handleClick(e) {
+      const index = e.target.dataset.index;
+      if (cells[index] || gameOver) return;
+      cells[index] = currentPlayer;
+      e.target.textContent = currentPlayer;
+      createHeart(e.target, currentPlayer);
+      if (checkWinner()) {
+        info.textContent = `🎉 ${currentPlayer} فاز!`;
+        gameOver = true;
+        scores[currentPlayer]++;
+        updateScoreboard();
+        highlightWin(currentPlayer);
+        return;
+      }
+      if (cells.every(cell => cell !== null)) {
+        info.textContent = "😅 تعادل!";
+        gameOver = true;
+        return;
+      }
+      currentPlayer = currentPlayer === '💙' ? '❤️' : '💙';
+      info.textContent = `الدور على: ${currentPlayer}`;
+    }
+
+    function checkWinner() {
+      const winPatterns = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+      return winPatterns.some(pattern => {
+        const [a, b, c] = pattern;
+        return cells[a] && cells[a] === cells[b] && cells[a] === cells[c];
+      });
+    }
+
+    function highlightWin(player) {
+      const winPatterns = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+      winPatterns.forEach(pattern => {
+        const [a, b, c] = pattern;
+        if (cells[a] === player && cells[b] === player && cells[c] === player) {
+          [a,b,c].forEach(i => board.children[i].classList.add('win'));
+          [a,b,c].forEach(i => createSparks(board.children[i]));
+        }
+      });
+    }
+
+    function updateScoreboard() {
+      blueScoreEl.textContent = scores['💙'];
+      redScoreEl.textContent = scores['❤️'];
+    }
+
+    function resetGame() {
+      cells.fill(null);
+      Array.from(board.children).forEach(cell => {
+        cell.textContent = '';
+        cell.classList.remove('win');
+      });
+      currentPlayer = '💙';
+      gameOver = false;
+      info.textContent = `الدور على: ${currentPlayer}`;
+    }
+
+    function createHeart(cell, player) {
+      const heart = document.createElement('div');
+      heart.classList.add('heart');
+      heart.textContent = player;
+      cell.appendChild(heart);
+      setTimeout(() => heart.remove(), 1000);
+    }
+
+    function createSparks(cell) {
+      for (let i = 0; i < 5; i++) {
+        const spark = document.createElement('div');
+        spark.classList.add('spark');
+        spark.textContent = '💖';
+        spark.style.left = Math.random() * 80 + 'px';
+        spark.style.top = Math.random() * 80 + 'px';
+        cell.appendChild(spark);
+        setTimeout(() => spark.remove(), 1000);
+      }
+    }
+
+    toggleMusicBtn.addEventListener('click', () => {
+      if (music.paused) {
+        music.play();
+        toggleMusicBtn.textContent = "⏸️ إيقاف/تشغيل الموسيقى";
+      } else {
+        music.pause();
+        toggleMusicBtn.textContent = "▶️ تشغيل الموسيقى";
+      }
+    });
+
+    volumeControl.addEventListener('input', (e) => {
+      music.volume = e.target.value;
+    });
+  </script>
+</body>
+</html>
